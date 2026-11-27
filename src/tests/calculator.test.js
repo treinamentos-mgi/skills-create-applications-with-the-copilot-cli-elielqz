@@ -1,4 +1,5 @@
-const { addition, subtraction, multiplication, division } = require('../calculator');
+const { spawnSync } = require('child_process');
+const { addition, subtraction, multiplication, division, modulo, exponentiation, squareRoot } = require('../calculator');
 
 describe('addition', () => {
   test('2 + 3 = 5', () => expect(addition(2, 3)).toBe(5));
@@ -34,5 +35,56 @@ describe('division', () => {
   });
   test('0 / 0 lança erro', () => {
     expect(() => division(0, 0)).toThrow();
+  });
+});
+
+describe('modulo', () => {
+  test('resto da divisão', () => expect(modulo(10, 3)).toBe(1));
+  test('dividendo negativo', () => expect(modulo(-10, 3)).toBe(-1));
+  test('divisor zero lança erro', () => expect(() => modulo(10, 0)).toThrow('módulo por zero'));
+});
+
+describe('exponentiation', () => {
+  test('potência inteira', () => expect(exponentiation(2, 3)).toBe(8));
+  test('expoente negativo', () => expect(exponentiation(2, -2)).toBe(0.25));
+  test('resultado não real lança erro', () => expect(() => exponentiation(-1, 0.5)).toThrow());
+  test('resultado infinito lança erro', () => expect(() => exponentiation(0, -1)).toThrow());
+  test('estouro numérico lança erro', () => expect(() => exponentiation(10, 1000)).toThrow());
+});
+
+describe('squareRoot', () => {
+  test('raiz quadrada', () => expect(squareRoot(9)).toBe(3));
+  test('raiz de zero', () => expect(squareRoot(0)).toBe(0));
+  test('número negativo lança erro', () => expect(() => squareRoot(-1)).toThrow('raiz quadrada de número negativo'));
+});
+
+describe('CLI', () => {
+  const run = (...args) => spawnSync(process.execPath, [require.resolve('../calculator'), ...args], { encoding: 'utf8' });
+
+  test.each([
+    [['modulo', '10', '3'], '1'],
+    [['%', '10', '3'], '1'],
+    [['exponentiation', '2', '3'], '8'],
+    [['^', '2', '3'], '8'],
+    [['squareRoot', '9'], '3'],
+    [['sqrt', '9'], '3'],
+    [['addition', '2', '3'], '5'],
+  ])('%j retorna %s', (args, expected) => {
+    const result = run(...args);
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe(expected);
+  });
+
+  test.each([
+    ['modulo', '1', '0'],
+    ['exponentiation', '-1', '0.5'],
+    ['squareRoot', '-1'],
+    ['sqrt', 'abc'],
+    ['sqrt', '9', '2'],
+    ['modulo', '1'],
+  ])('%j retorna erro', (...args) => {
+    const result = run(...args);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/Erro|Uso/);
   });
 });
