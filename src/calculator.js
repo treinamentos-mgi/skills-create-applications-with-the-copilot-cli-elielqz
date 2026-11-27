@@ -3,56 +3,77 @@
  * Calculadora CLI
  *
  * Operações suportadas:
- *   add (+)       - adição
- *   subtract (-)  - subtração
- *   multiply (*)  - multiplicação
- *   divide (/)    - divisão (divisão por zero retorna erro)
+ *   addition (+)       - adição
+ *   subtraction (-)  - subtração
+ *   multiplication (*)  - multiplicação
+ *   division (/)    - divisão (divisão por zero retorna erro)
  *
  * Uso: node src/calculator.js <operação> <número1> <número2>
- * Ex.: node src/calculator.js add 2 3
+ * Ex.: node src/calculator.js addition 2 3
  */
 
 // Adição
-function add(a, b) {
+function addition(a, b) {
   return a + b;
 }
 
 // Subtração
-function subtract(a, b) {
+function subtraction(a, b) {
   return a - b;
 }
 
 // Multiplicação
-function multiply(a, b) {
+function multiplication(a, b) {
   return a * b;
 }
 
 // Divisão (lança erro se o divisor for zero)
-function divide(a, b) {
+function division(a, b) {
   if (b === 0) {
     throw new Error('Erro: divisão por zero não é permitida.');
   }
   return a / b;
 }
 
+// Módulo (lança erro se o divisor for zero)
+function modulo(a, b) {
+  if (b === 0) {
+    throw new Error('Erro: módulo por zero não é permitido.');
+  }
+  return a % b;
+}
+
+// Exponenciação
+function power(base, exponent) {
+  return Math.pow(base, exponent);
+}
+
+// Raiz quadrada (lança erro para números negativos)
+function squareRoot(n) {
+  if (n < 0) {
+    throw new Error('Erro: não é possível calcular a raiz quadrada de número negativo.');
+  }
+  return Math.sqrt(n);
+}
+
 const operations = {
-  add, '+': add,
-  subtract, '-': subtract,
-  multiply, '*': multiply, x: multiply,
-  divide, '/': divide,
+  addition, '+': addition,
+  subtraction, '-': subtraction,
+  multiplication, '*': multiplication, x: multiplication,
+  division, '/': division,
 };
 
 function main(args) {
   const [op, rawA, rawB] = args;
 
   if (args.length !== 3) {
-    console.error('Uso: node calculator.js <add|subtract|multiply|divide> <n1> <n2>');
+    console.error('Uso: node calculator.js <addition|subtraction|multiplication|division> <n1> <n2>');
     return 1;
   }
 
   const fn = operations[op];
   if (!fn) {
-    console.error(`Erro: operação desconhecida "${op}". Use add, subtract, multiply ou divide.`);
+    console.error(`Erro: operação desconhecida "${op}". Use addition, subtraction, multiplication ou division.`);
     return 1;
   }
 
@@ -76,4 +97,4 @@ if (require.main === module) {
   process.exitCode = main(process.argv.slice(2));
 }
 
-module.exports = { add, subtract, multiply, divide };
+module.exports = { addition, subtraction, multiplication, division, modulo, power, squareRoot };
