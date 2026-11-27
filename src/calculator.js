@@ -7,8 +7,12 @@
  *   subtraction (-)  - subtração
  *   multiplication (*)  - multiplicação
  *   division (/)    - divisão (divisão por zero retorna erro)
+ *   modulo (%)      - resto da divisão (divisor zero retorna erro)
+ *   exponentiation (**) - exponenciação
+ *   squareRoot (sqrt) - raiz quadrada (número negativo retorna erro)
  *
  * Uso: node src/calculator.js <operação> <número1> <número2>
+ * Raiz quadrada: node src/calculator.js squareRoot <número>
  * Ex.: node src/calculator.js addition 2 3
  */
 
@@ -35,30 +39,68 @@ function division(a, b) {
   return a / b;
 }
 
+function validateOperands(...operands) {
+  if (!operands.every(Number.isFinite)) {
+    throw new Error('Erro: os operandos devem ser números válidos.');
+  }
+}
+
+// Módulo (lança erro se o divisor for zero)
+function modulo(a, b) {
+  validateOperands(a, b);
+  if (b === 0) {
+    throw new Error('Erro: módulo por zero não é permitido.');
+  }
+  return a % b;
+}
+
+// Exponenciação (lança erro para resultados não reais ou não finitos)
+function exponentiation(a, b) {
+  validateOperands(a, b);
+  const result = a ** b;
+  if (!Number.isFinite(result)) {
+    throw new Error('Erro: a exponenciação deve produzir um número real finito.');
+  }
+  return result;
+}
+
+// Raiz quadrada (lança erro para números negativos)
+function squareRoot(a) {
+  validateOperands(a);
+  if (a < 0) {
+    throw new Error('Erro: raiz quadrada de número negativo não é permitida.');
+  }
+  return Math.sqrt(a);
+}
+
 const operations = {
   addition, '+': addition,
   subtraction, '-': subtraction,
   multiplication, '*': multiplication, x: multiplication,
   division, '/': division,
+  modulo, '%': modulo,
+  exponentiation, '**': exponentiation,
+  squareRoot, sqrt: squareRoot,
 };
 
 function main(args) {
   const [op, rawA, rawB] = args;
 
-  if (args.length !== 3) {
-    console.error('Uso: node calculator.js <addition|subtraction|multiplication|division> <n1> <n2>');
+  const unary = op === 'squareRoot' || op === 'sqrt';
+  if (args.length !== (unary ? 2 : 3)) {
+    console.error('Uso: node calculator.js <addition|subtraction|multiplication|division|modulo|exponentiation> <n1> <n2> ou node calculator.js squareRoot <n1>');
     return 1;
   }
 
-  const fn = operations[op];
+  const fn = Object.hasOwn(operations, op) ? operations[op] : undefined;
   if (!fn) {
-    console.error(`Erro: operação desconhecida "${op}". Use addition, subtraction, multiplication ou division.`);
+    console.error(`Erro: operação desconhecida "${op}". Use addition, subtraction, multiplication, division, modulo, exponentiation ou squareRoot.`);
     return 1;
   }
 
   const a = Number(rawA);
-  const b = Number(rawB);
-  if (!Number.isFinite(a) || !Number.isFinite(b)) {
+  const b = unary ? undefined : Number(rawB);
+  if (!Number.isFinite(a) || (!unary && !Number.isFinite(b))) {
     console.error('Erro: os operandos devem ser números válidos.');
     return 1;
   }
@@ -76,4 +118,4 @@ if (require.main === module) {
   process.exitCode = main(process.argv.slice(2));
 }
 
-module.exports = { addition, subtraction, multiplication, division };
+module.exports = { addition, subtraction, multiplication, division, modulo, exponentiation, squareRoot };
